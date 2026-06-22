@@ -20,7 +20,7 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=1
-      - FASTAPI_URL=http://portfolio.zettelweb.com/api # Replace with your actual domain
+      - FASTAPI_URL=https://portfolio.zettelweb.com/api
     depends_on:
       - backend
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"

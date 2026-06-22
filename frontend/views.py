@@ -18,12 +18,18 @@ def home(request):
     return render(request, 'frontend/home.html', context)
 
 def mlops(request):
-    # Use environment variable on VPS, fallback to localhost for dev
-    # On VPS, set FASTAPI_URL="https://portfolio.zettelweb.com/api" (or your specific API port)
-    default_url = f"{request.scheme}://{request.get_host().split(':')[0]}:8002"
+    # Detect the environment:
+    host = request.get_host().split(':')[0]
+    
+    if host in ['localhost', '127.0.0.1']:
+        default_url = "http://127.0.0.1:8002"
+    else:
+        # Request via Nginx, so use the /api proxy
+        default_url = f"https://{host}/api"
+        
     fastapi_url = os.environ.get('FASTAPI_URL', default_url)
     
     context = {
-        'fastapi_url': https://portfolio.zettelweb.com/api # Replace with your actual domain
+        'fastapi_url': fastapi_url
     }
     return render(request, 'frontend/spatial_dashboard.html', context)
