@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render
 
 def home(request):
@@ -17,8 +18,12 @@ def home(request):
     return render(request, 'frontend/home.html', context)
 
 def mlops(request):
-    # Pass the FastAPI URL to the template so JS knows where to send requests
+    # Use environment variable on VPS, fallback to localhost for dev
+    # On VPS, set FASTAPI_URL="https://portfolio.zettelweb.com/api" (or your specific API port)
+    default_url = f"{request.scheme}://{request.get_host().split(':')[0]}:8002"
+    fastapi_url = os.environ.get('FASTAPI_URL', default_url)
+    
     context = {
-        'fastapi_url': 'http://127.0.0.1:8002'
+        'fastapi_url': fastapi_url
     }
     return render(request, 'frontend/spatial_dashboard.html', context)
