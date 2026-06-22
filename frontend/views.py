@@ -24,6 +24,6 @@ def mlops(request):
     fastapi_url = os.environ.get('FASTAPI_URL', default_url)
     
     context = {
-        'fastapi_url': fastapi_url
+        'fastapi_url': https://portfolio.zettelweb.com/api # Replace with your actual domain
     }
     return render(request, 'frontend/spatial_dashboard.html', context)
