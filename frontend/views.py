@@ -4,35 +4,10 @@ def home(request):
     # We can pass portfolio project metadata directly to the template dynamically
     portfolio_projects = [
         {
-            "title": "🏡 Real Estate ML Valuation Engine",
-            "description": "A containerized Scikit-Learn pipeline deployed via FastAPI with live database performance logging.",
+            "title": "ML Pipeline with FastAPI",
+            "description": "A containerized Scikit and pytorch ML pipeline with FastAPI for model serving and Database models for tracking experiments.",
             "url_name": "mlops", # This will match our URL pattern name later,
             "tags": ["Python", "MLOps", "Architecture"] # Example tags for visual display
-        },
-        {
-            "title": "🏡 Real Estate ML Valuation Engine",
-            "description": "A containerized Scikit-Learn pipeline deployed via FastAPI with live database performance logging.",
-            "url_name": "mlops" # This will match our URL pattern name later
-        },
-        {
-            "title": "🏡 Real Estate ML Valuation Engine",
-            "description": "A containerized Scikit-Learn pipeline deployed via FastAPI with live database performance logging.",
-            "url_name": "mlops" # This will match our URL pattern name later
-        },
-        {
-            "title": "🏡 Real Estate ML Valuation Engine",
-            "description": "A containerized Scikit-Learn pipeline deployed via FastAPI with live database performance logging.",
-            "url_name": "mlops" # This will match our URL pattern name later
-        },
-        {
-            "title": "🏡 Real Estate ML Valuation Engine",
-            "description": "A containerized Scikit-Learn pipeline deployed via FastAPI with live database performance logging.",
-            "url_name": "mlops" # This will match our URL pattern name later
-        },
-        {
-            "title": "🏡 Real Estate ML Valuation Engine",
-            "description": "A containerized Scikit-Learn pipeline deployed via FastAPI with live database performance logging.",
-            "url_name": "mlops" # This will match our URL pattern name later
         },
     ]
     

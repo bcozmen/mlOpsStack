@@ -1,0 +1,26 @@
+# === Python/Environment ===
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+ENV/
+
+# === Django Specific ===
+db.sqlite3
+db.sqlite3-journal
+/media/
+
+# === Logs & Process Files ===
+*.log
+nohup.out
+*.pid
+
+# === OS & IDEs ===
+.DS_Store
+.idea/
+.vscode/
+
+# === Environment Variables / Secrets ===
+.env

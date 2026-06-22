@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7g)nm_i26ius*r=+a7-uch9mk&url5y25h&89iuh!o!v6n0oc!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["portfolio.zettelweb.com", "localhost", "127.0.0.1"]
 
 
 # Application definition
