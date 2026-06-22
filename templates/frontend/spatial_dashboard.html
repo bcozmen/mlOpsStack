@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spatial Density Framework</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.03em;
+            background: linear-gradient(to right, #a5b4fc, #818cf8, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .control-bar { text-align: center; margin-bottom: 40px; }
+
+        #clear-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        #clear-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 30px;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .plot-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .plot-box h3 {
+            margin-top: 0;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 15px;
+        }
+
+        canvas {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            background-color: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            cursor: crosshair;
+            max-width: 100%;
+        }
+
+        .plotly-wrapper { 
+            width: 100%; 
+            height: 440px; 
+            border-radius: 16px; 
+            overflow: hidden; 
+        }
+
+        /* Documentation Section Style */
+        .explanation-section {
+            max-width: 1500px;
+            margin: 50px auto 20px auto;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 35px;
+        }
+
+        .explanation-section h2 {
+            font-size: 1.8rem;
+            color: #a5b4fc;
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .explanation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .explanation-column h4 {
+            color: #f8fafc;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .explanation-column p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>DeepSpatial Density Explorer</h1>
+    <p class="subtitle">
+        An interactive comparison between statistical estimators and neural density regressors.<br>
+        <strong>Click inside the canvas to drop points.</strong> The environment will instantly train both models 
+        via a PyTorch microservice and synchronize the updates across all user sessions in real time.
+    </p>
+</header>
+
+<div class="control-bar">
+    <button id="clear-btn">Clear Canvas State</button>
+</div>
+
+<div class="dashboard-container">
+    <div class="plot-box">
+        <h3>1. Interactive Input Mesh</h3>
+        <canvas id="clickCanvas" width="400" height="400"></canvas>
+    </div>
+    <div class="plot-box">
+        <h3>2. Kernel Density Evaluation</h3>
+        <div id="kdePlot" class="plotly-wrapper"></div>
+    </div>
+    <div class="plot-box">
+        <h3>3. Neural Density Regressor</h3>
+        <div id="nnPlot" class="plotly-wrapper"></div>
+    </div>
+</div>
+
+<section class="explanation-section">
+    <h2>Methodological Breakdown</h2>
+    <div class="explanation-grid">
+        <div class="explanation-column">
+            <h4>Data Persistence Pipeline</h4>
+            <p>
+                Every coordinate transaction generated from the Canvas viewport normalizes raw pixels into mathematical boundaries ranging between $[0, 1]$. These coordinate values are instantly transmitted via JSON payload to a lightweight SQLite database managed by an asynchronous FastAPI wrapper. When a new agent joins, the system pulls the full historical telemetry array to guarantee identical visualization states.
+            </p>
+        </div>
+        <div class="explanation-column">
+            <h4>Traditional Kernel Density Estimation</h4>
+            <p>
+                The center panel visualizes a standard Scikit-Learn Gaussian Kernel Density model. It acts as a non-parametric baseline by placing a continuous normal probability curve over each individual point token. This statistical method calculates density directly without explicit structural optimization, making it responsive but prone to strict hyperparameter boundaries.
+            </p>
+        </div>
+        <div class="explanation-column">
+            <h4>Deep Spatial Normalization Network</h4>
+            <p>
+                The rightmost graph visualizes a custom Deep Multi-Layer Perceptron optimized in PyTorch. Unlike standard models, it converts coordinate boundaries directly into continuous spatial density scores. To prevent overfitting to sharp points, it adds smooth Gaussian jitter to the target batch arrays, while a numeric LogSumExp partition layer maps the space into a valid probability distribution.
+            </p>
+        </div>
+    </div>
+</section>
+
+<script>
+    const API_URL = "{{ fastapi_url|default:'http://127.0.0.1:8002' }}";
+    const canvas = document.getElementById('clickCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const initialLayout = { 
+        xaxis: {range: [0, 1], fixedrange: true, gridcolor: 'rgba(255,255,255,0.05)', zeroline: false}, 
+        yaxis: {range: [0, 1], fixedrange: true, gridcolor: 'rgba(255,255,255,0.05)', zeroline: false},
+        paper_bgcolor: 'rgba(0,0,0,0)', 
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#94a3b8' }, 
+        margin: {l: 50, r: 90, b: 50, t: 30}
+    };
+
+    const initialKdeTrace = [{
+        z: [[0]], 
+        type: 'contour', 
+        colorscale: 'Viridis',
+        colorbar: { thickness: 15, len: 0.9, x: 1.05 }
+    }];
+
+    const initialNnTrace = [{
+        z: [[0]], 
+        type: 'contour', 
+        colorscale: 'Magma',
+        colorbar: { thickness: 15, len: 0.9, x: 1.05 }
+    }];
+
+    Plotly.newPlot('kdePlot', initialKdeTrace, initialLayout);
+    Plotly.newPlot('nnPlot', initialNnTrace, initialLayout);
+
+    async function initDashboard() {
+        try {
+            const res = await fetch(`${API_URL}/points/`);
+            const points = await res.json();
+            points.forEach(point => {
+                drawCircle(point.x * canvas.width, (1.0 - point.y) * canvas.height);
+            });
+            if (points.length >= 2) updateDensityPlots();
+        } catch (err) { console.error("Initialization failure:", err); }
+    }
+
+    initDashboard();
+
+    canvas.addEventListener('click', async function(event) {
+        const rect = canvas.getBoundingClientRect();
+        const rawX = event.clientX - rect.left;
+        const rawY = event.clientY - rect.top;
+        
+        drawCircle(rawX, rawY);
+
+        try {
+            await fetch(`${API_URL}/points/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ x: rawX / canvas.width, y: 1.0 - (rawY / canvas.height) })
+            });
+            updateDensityPlots();
+        } catch (err) { console.error("Error processing coordinates point input:", err); }
+    });
+
+    function drawCircle(x, y) {
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#6366f1'; ctx.fill(); ctx.stroke();
+    }
+
+    async function updateDensityPlots() {
+        try {
+            const response = await fetch(`${API_URL}/train-and-evaluate/?grid_size=50`, { method: 'POST' });
+            const data = await response.json();
+            if (data.status === "success") {
+                Plotly.react('kdePlot', [{ 
+                    x: data.axis_range, 
+                    y: data.axis_range, 
+                    z: data.kde_Z, 
+                    type: 'contour', 
+                    colorscale: 'Viridis',
+                    colorbar: { thickness: 15, len: 0.9, x: 1.05 }
+                }], initialLayout);
+
+                Plotly.react('nnPlot', [{ 
+                    x: data.axis_range, 
+                    y: data.axis_range, 
+                    z: data.nn_Z, 
+                    type: 'contour', 
+                    colorscale: 'Magma',
+                    colorbar: { thickness: 15, len: 0.9, x: 1.05 }
+                }], initialLayout);
+            }
+        } catch (err) { console.error("Evaluating state failure:", err); }
+    }
+
+    document.getElementById('clear-btn').addEventListener('click', async function() {
+        await fetch(`${API_URL}/points/clear/`, { method: 'DELETE' });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        Plotly.react('kdePlot', initialKdeTrace, initialLayout);
+        Plotly.react('nnPlot', initialNnTrace, initialLayout);
+    });
+</script>
+</body>
+</html>

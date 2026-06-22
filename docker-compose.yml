@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    volumes:
+      - ./backend:/app/backend
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+    depends_on:
+      - backend
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"

@@ -1,0 +1,85 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berk Can Özmen | Applied ML & Dev Portfolio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR: Personal Branding -->
+    <header class="intro-section">
+        <div class="profile-pic-container">
+            <img src="{% static 'pic.jpg' %}" alt="Berk Can Özmen" class="profile-pic">
+        </div>
+
+        <h1>Berk Can Özmen</h1>
+        <h3 class="intro-header-title">Applied ML Scientist & Full-Stack Engineer</h3>
+        <h4 class="intro-location">📍 Berlin, Germany</h4>
+        
+        <div class="btn-group">
+            <a href="mailto:ozmenberkcan@gmail.com" class="btn btn-primary">
+                Get In Touch
+            </a>
+            <a href="{% static 'CV.pdf' %}" download="Berk_Can_Oezmen_CV.pdf" class="btn btn-outline">
+                📄 CV
+            </a>
+            <a href="https://github.com/bcozmen" target="_blank" class="btn btn-outline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CENTER CONTENT: Biography & Showcases -->
+    <main class="portfolio-section">
+        
+        <div class="intro-bio-container">
+            <p>
+                I bridge the gap between rigorous mathematical theory and production-ready code. With an M.Sc. in Computer Science from TU Berlin and hands-on experience ranging from Reinforcement Learning frameworks to custom encrypted cloud ecosystems, I help teams solve complex algorithmic problems and deploy them effectively.
+            </p>
+            <p>
+                <strong>How we can work together:</strong> Whether you need deep academic research into an algorithmic problem, a robust MLOps pipeline using FastAPI/Docker, or a rapid full-stack AI web integration, I design systems built to perform.
+            </p>
+        </div>
+
+        <h2 class="section-title">🛠️ Production Showcases</h2>
+        <div class="project-grid">
+            
+            {% for project in projects %}
+                <div class="project-card">
+                    <div>
+                        <h3>{{ project.title }}</h3>
+                        <p>{{ project.description }}</p>
+                        
+                        <div class="project-tags">
+                        {% for tag in project.tags %}
+                                <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                        </div>
+
+                    </div>
+                    
+                    {% if project.url_name != '#' %}
+                        <a href="{% url project.url_name %}" class="project-link stretched-link">Explore App &rarr;</a>
+                    {% else %}
+                        <a href="#" class="project-link" style="color: #a1a1aa; cursor: not-allowed;">Coming Soon</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+        </div>
+    </main>
+
+</body>
+</html>
