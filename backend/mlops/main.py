@@ -100,7 +100,7 @@ def train_and_evaluate(grid_size: int = 100, db: Session = Depends(get_db)):
         kde_X, kde_Y, kde_Z = kde_model.visualize(grid_size=grid_size)
     
         # 2. Process NN
-        nn_model.train(coords_torch, epochs=20) 
+        nn_model.train(coords_torch, epochs=5) 
         nn_X, nn_Y, nn_Z = nn_model.visualize(grid_size=grid_size)
 
     # Send clean 1D axis arrays along with the 2D Z density matrix
