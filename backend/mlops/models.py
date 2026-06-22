@@ -7,6 +7,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
+import os
+
 class KDEModel:
     def __init__(self, bandwidth=0.04, kernel='gaussian'):
         self.bandwidth = bandwidth
@@ -69,6 +71,10 @@ class NNModel():
         X_g, Y_g = torch.meshgrid(x_g, y_g, indexing='xy')
         self.integration_grid = torch.stack([X_g.ravel(), Y_g.ravel()], dim=-1)
         self.batch_size = batch_size
+
+        if os.path.exists("nn_density_model.pth"):
+            self.load_model("nn_density_model.pth")
+        
         
     def train(self, X, epochs=3): 
         "receives the FULL updated dataset from the API and fits completely."
@@ -97,6 +103,8 @@ class NNModel():
             loss = -log_prob.mean()
             loss.backward()
             self.optimizer.step()
+
+        self.save_model("nn_density_model.pth")
 
     def visualize(self, grid_size=100):
         self.model.eval()
