@@ -71,7 +71,11 @@
                     </div>
                     
                     {% if project.url_name != '#' %}
-                        <a href="{% url project.url_name %}" class="project-link stretched-link">Explore App &rarr;</a>
+                        {% if project.url_name|slice:":4" == "http" %}
+                            <a href="{{ project.url_name }}" class="project-link stretched-link" target="_blank">Explore App &rarr;</a>
+                        {% else %}
+                            <a href="{% url project.url_name %}" class="project-link stretched-link" target="_blank">Explore App &rarr;</a>
+                        {% endif %}
                     {% else %}
                         <a href="#" class="project-link" style="color: #a1a1aa; cursor: not-allowed;">Coming Soon</a>
                     {% endif %}

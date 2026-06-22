@@ -10,6 +10,12 @@ def home(request):
             "url_name": "mlops", # This will match our URL pattern name later,
             "tags": ["Python", "MLOps", "Architecture"] # Example tags for visual display
         },
+        {
+            "title": "Zettelweb",
+            "description" : "A django based web app for managing a personal knowledge base using the Zettelkasten method. It allows users to create, organize, and link notes in a structured way.",
+            "url_name": "https://zettelweb.com", # External URL
+            "tags": ["Django", "Web Development", "JavaScript"]
+        }
     ]
     
     context = {

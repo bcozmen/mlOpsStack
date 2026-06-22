@@ -4,13 +4,38 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 import numpy as np
 import torch
+import threading
+from contextlib import asynccontextmanager
 
 # Import your database components
 from database import SessionLocal, ClickedPoint
 # Import your models (assuming they are in models.py or defined above)
 from models import KDEModel, NNModel  
 
-app = FastAPI(title="Spatial Density API")
+# Lock to prevent concurrent training issues with global models
+model_lock = threading.Lock()
+
+# Initialize global instances of your models
+kde_model = KDEModel(bandwidth=0.04)
+nn_model = NNModel(bandwidth=0.03, grid_res=40)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load old datapoints from the database on startup
+    db = SessionLocal()
+    try:
+        points = db.query(ClickedPoint).all()
+        if len(points) >= 2:
+            coords_np = np.array([[p.x, p.y] for p in points], dtype=np.float32)
+            coords_torch = torch.tensor(coords_np, dtype=torch.float32)
+            with model_lock:
+                kde_model(coords_np)
+                nn_model.train(coords_torch, epochs=20)
+    finally:
+        db.close()
+    yield
+
+app = FastAPI(title="Spatial Density API", lifespan=lifespan)
 
 # Enable CORS so your Django frontend can communicate with FastAPI
 app.add_middleware(
@@ -42,10 +67,6 @@ def get_db():
     finally:
         db.close()
 
-# Initialize global instances of your models
-kde_model = KDEModel(bandwidth=0.04)
-nn_model = NNModel(bandwidth=0.03, grid_res=40)
-
 
 @app.post("/points/", response_model=PointResponse)
 def add_point(point: PointCreate, db: Session = Depends(get_db)):
@@ -64,7 +85,7 @@ def get_points(db: Session = Depends(get_db)):
 
 
 @app.post("/train-and-evaluate/")
-def train_and_evaluate(grid_size: int = 50, db: Session = Depends(get_db)):
+def train_and_evaluate(grid_size: int = 100, db: Session = Depends(get_db)):
     points = db.query(ClickedPoint).all()
     
     if len(points) < 2:
@@ -73,13 +94,14 @@ def train_and_evaluate(grid_size: int = 50, db: Session = Depends(get_db)):
     coords_np = np.array([[p.x, p.y] for p in points], dtype=np.float32)
     coords_torch = torch.tensor(coords_np, dtype=torch.float32)
 
-    # 1. Process KDE
-    kde_model(coords_np)
-    kde_X, kde_Y, kde_Z = kde_model.visualize(grid_size=grid_size)
-
-    # 2. Process NN
-    nn_model.train(coords_torch, epochs=20) 
-    nn_X, nn_Y, nn_Z = nn_model.visualize(grid_size=grid_size)
+    with model_lock:
+        # 1. Process KDE
+        kde_model(coords_np)
+        kde_X, kde_Y, kde_Z = kde_model.visualize(grid_size=grid_size)
+    
+        # 2. Process NN
+        nn_model.train(coords_torch, epochs=20) 
+        nn_X, nn_Y, nn_Z = nn_model.visualize(grid_size=grid_size)
 
     # Send clean 1D axis arrays along with the 2D Z density matrix
     return {

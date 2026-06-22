@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import os
 
 class KDEModel:
-    def __init__(self, bandwidth=0.04, kernel='gaussian'):
+    def __init__(self, bandwidth=0.03, kernel='gaussian'):
         self.bandwidth = bandwidth
         self.kernel = kernel
         self.kde = None
@@ -55,7 +55,7 @@ class SpatialDensityNet(nn.Module):
 
     
 class NNModel():
-    def __init__(self, bandwidth=0.03, grid_res=40, batch_size=32):
+    def __init__(self, bandwidth=0.03, grid_res=100, batch_size=32):
         self.model = SpatialDensityNet()
         
         # --- FIX 1: Add weight_decay to penalize sharp spikes and steep gradients ---
